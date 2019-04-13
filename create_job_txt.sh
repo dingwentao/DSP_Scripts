@@ -37,7 +37,7 @@ echo "reading datasets under GPS timestamps"
 while IFS='' read -r line || [[ -n "$line" ]]; do
   prefix="/data/${project_name}/${line}"
   # only when .dat exists can we execute commands
-  for i in $(ls /data/${project_name}/${line} | grep dat); do
+  for i in $(ls /data/${project_name}/${line} | grep dat$); do
     echo "'${prefix}/${line}_config.xml','${prefix}/${i}'" >> ${job_list}
   done
 done < "${timestamp_file}"

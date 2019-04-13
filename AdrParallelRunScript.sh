@@ -30,7 +30,7 @@ function do_job {
     echo "starting job $1"
     STARTTIME=`date`
     twofiles=$1
-    nohup matlab -nodisplay -nodesktop -r "arena_data_reader_new($twofiles);exit"
+    nohup matlab -nodisplay -nodesktop -r "arena_data_reader_batch($twofiles);exit"
     ENDTIME=`date`
     echo "ADR job $twofiles completed"
     echo $1 $STARTTIME $ENDTIME>> $joblog
