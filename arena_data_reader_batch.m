@@ -134,7 +134,7 @@ end
 %tic
 counter = 0;
 start_pointer =0;
-
+unsync_times=0;
 while true
     % Read in sync word and error check.
 %    sync = fread(radar_id, 8);
@@ -143,8 +143,16 @@ while true
         break;
     end
     if ~isequal(sync,sync_word)
+	unsync_times=unsync_times+1;
+	%fprintf('unsync %d times now!\n',unsync_times);
         % check the whole file for the first sync
-        frewind(radar_id);
+        status = fseek(radar_id,-7,'cof');
+        if status == -1
+          fprintf('Failed to resync file pointer. Exiting.'); return;
+        end
+	continue;
+
+	frewind(radar_id);
         sync = fread(radar_id, 'uint64');
         ind = find(sync == sync_word )-1;
 
@@ -287,19 +295,14 @@ while true
         break;
     end
     if ~isequal(sync,sync_word)
+	unsync_times=unsync_times+1;
+	%fprintf('unsync %d times now!\n',unsync_times);
         % check the whole file for the first sync
-        frewind(radar_id);
-        sync = fread(radar_id, 'uint64');
-        ind = find(sync == sync_word )-1;
-
-        if length(ind) == 0 
-          fprintf('Unexpected data found instead of sync. Exiting.'); return;
+        status = fseek(radar_id,-7,'cof');
+        if status == -1
+          fprintf('Failed to resync file pointer. Exiting.'); return;
         end
-        
-        start_pointer = ind(1)*8;
-        fseek(radar_id, start_pointer, 'bof');
-        sync = fread(radar_id, 1,'uint64');
-
+	continue;
     end
 
         if ~isequal(sync,sync_word)
@@ -505,6 +508,14 @@ delete(tmp_fullpath);
 % Delete radar.dat file.
 fclose(radar_id);
 mat_fullpath = strcat(dat_fullpath(1:(end-3)),'mat');
+mat_counter_fullpath = strcat(dat_fullpath(1:(end-4)),'_counters.mat');
+Counters = Results;
+for i = 1:size(my_modes,2)
+    Counters(i).Chirps = [];
+end
+ 
 save(mat_fullpath, 'Results','trace_time','-v7.3','-nocompression');
 fprintf(strcat('finishing ',mat_fullpath, '......\n'));
+save(mat_counter_fullpath, 'Counters','trace_time','-v7.3','-nocompression');
+fprintf(strcat('finishing ',mat_counter_fullpath, '......\n'));
 %toc
