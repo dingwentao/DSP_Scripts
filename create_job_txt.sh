@@ -12,7 +12,8 @@ if [ "$#" -ne 1 ]; then
     Greeland_Project
     Dome_Fuji_2019_Sounder
     Dome_Fuji_2019_FMCW
-    
+    Grand_Junction_2019   
+ 
 for example: \"sh 16_jobs.sh Japan_Antarctica_Project\""
     exit
 fi
