@@ -10,6 +10,11 @@ debug_mode = 0;
 % ARENA software bug.
 [my_modes,my_range_gates,socket_payload_size] = arena_xml_parse(xml_fullpath);
 
+if isempty(my_modes)
+	fprintf('Failed to parse modes from xml config file %s. Exiting. \n',xml_fullpath);
+	exit;
+end
+
 % Define a variable for all results
 Results = struct('Mode',{}, 'Chirps',{}, 'Relative_Counters',{}, ...
     'Profile_Counters',{}, 'PPS_Fractional_Counters',{}, ...
@@ -148,27 +153,11 @@ while true
         % check the whole file for the first sync
         status = fseek(radar_id,-7,'cof');
         if status == -1
-          fprintf('Failed to resync file pointer. Exiting.'); return;
+          fprintf('Failed to move back file pointer for resync. Exiting.'); return;
         end
 	continue;
-
-	frewind(radar_id);
-        sync = fread(radar_id, 'uint64');
-        ind = find(sync == sync_word )-1;
-
-        if length(ind) == 0 
-          fprintf('Unexpected data found instead of sync. Exiting.'); return;
-        end
-        
-        start_pointer = ind(1)*8;
-        fseek(radar_id, start_pointer, 'bof');
-        sync = fread(radar_id, 1,'uint64');
-
     end
 
-        if ~isequal(sync,sync_word)
-              fprintf('Unexpected data found instead of sync. Exiting.'); return;
-        end
 
     % Read in radar header type and length together.
     radar_header_type = fread(radar_id, 8);
@@ -222,11 +211,12 @@ while true
         
         % slight speed up when reading int64 in combination with typecast instead reading int32
  %       new_trace = fread(radar_id,2*num_samples_per_profile, 'int32');
-        new_trace = (typecast(int64(fread(radar_id,num_samples_per_profile, 'int64')), 'int32'));
+	profile_bytes =fread(radar_id,num_samples_per_profile, 'int64');
     
     	if feof(radar_id)
        		 break;
     	end
+        new_trace = (typecast(int64(profile_bytes), 'int32'));
     
         radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     elseif isequal(radar_profile_data_format, [0;0;3;0])
@@ -305,9 +295,6 @@ while true
 	continue;
     end
 
-        if ~isequal(sync,sync_word)
-              fprintf('Unexpected data found instead of sync. Exiting.'); return;
-        end
 
     % Read in radar header type.
     radar_header_type = fread(radar_id, 4);
@@ -421,12 +408,13 @@ while true
         
         % slight speed up when reading int64 in combination with typecast instead reading int32
  %       new_trace = fread(radar_id,2*num_samples_per_profile, 'int32');
-        new_trace = (typecast(int64(fread(radar_id,num_samples_per_profile, 'int64')), 'int32'));
-
+	profile_bytes =fread(radar_id,num_samples_per_profile, 'int64');
 	 if feof(radar_id)
 		 Results(mode_index).counter = Results(mode_index).counter - 1;
    		 break;
    	 end
+        
+	new_trace = (typecast(int64(profile_bytes), 'int32'));
         
         radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     elseif isequal(radar_profile_data_format, [0;0;3;0])
