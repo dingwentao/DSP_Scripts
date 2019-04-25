@@ -38,7 +38,11 @@ rel_time = [];
 
 %% Extracting UDP packets and save to a temporary file
 % Open radar.dat temporary file.
-tmp_fullpath = strcat(dat_fullpath(1:(end-3)),'tmp');
+%tmp_fullpath = strcat(dat_fullpath(1:(end-3)),'tmp');
+[tmp_filepath,tmp_name,tmp_ext] = fileparts(dat_fullpath);
+tmp_dir = '/scratch/';
+tmp_fullpath = strcat(tmp_dir,tmp_name, '.tmp');
+
 radar_id = fopen(tmp_fullpath , 'w');
 if radar_id == -1
     fprintf(strcat('ERROR: count not open temp file ',tmp_fullpath, ' for Writing. Exiting.'));return;
