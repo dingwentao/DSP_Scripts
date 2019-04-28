@@ -3,10 +3,10 @@
 #SBATCH -q defq
 #SBATCH -N 1
 #SBATCH -n 32
-#SBATCH -J ADRBatch
-#SBATCH -o out.ADR_batch.%j
-#SBATCH -e err.ADR_batch.%j
+#SBATCH -J BatchProc
+#SBATCH -o out.batch_proc.%j
+#SBATCH -e err.batch_proc.%j
 
 module load matlab
 
-./AdrParallelRunScript.sh 32 $1
+./ParallelRunScript.sh 32 $1

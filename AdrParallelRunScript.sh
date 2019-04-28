@@ -1,8 +1,10 @@
 #! /usr/bin/env bash
-# use chmod +x AdrParallelScript.sh
 numberofProcessors=$1
 jobstxt=$2
 joblog=${jobstxt/.txt/}-$(date +"%y%m%d-%H%M%S").log
+chunk_size=64
+code_dir="'/data/RSC_HPC/scripts'"
+
 
 export PATH=/home/.MATLAB/R2018a/bin:$PATH  #change to your path
 
@@ -30,7 +32,18 @@ function do_job {
     echo "starting job $1"
     STARTTIME=`date`
     twofiles=$1
-    nohup matlab -nodisplay -nodesktop -r "arena_data_reader_batch($twofiles);exit"
+    IFS=, read xmlpath datapath <<<$twofiles
+    #echo $datapath
+    datapath=${datapath#"'"};datapath=${datapath%"'"}
+    #echo $datapath
+    dat_dir="'$(dirname $datapath)'"
+    dat_file="$(basename $datapath)"
+    dat_filestem="'$(echo "$dat_file" | cut -f 1 -d '.')'"
+    #echo $dat_dir
+    #echo $code_dir
+    #echo $dat_filestem
+    #nohup matlab -nodisplay -nodesktop -r "arena_data_reader_batch($twofiles);exit"
+    nohup matlab -nodisplay -nodesktop -r "Colorado_chunk_processor($dat_dir,$dat_dir,$code_dir,$dat_filestem,$chunk_size); exit"	
     ENDTIME=`date`
     echo "ADR job $twofiles completed"
     echo $1 $STARTTIME $ENDTIME>> $joblog
