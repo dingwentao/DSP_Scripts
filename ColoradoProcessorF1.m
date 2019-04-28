@@ -2,8 +2,8 @@
 % SNOW DATA CHUNK PROCESSOR
 % This script is to process each slow-time chunk of snow data
 % Author: Shashank Wattal
-% Version: 1.0
-% Last updated: 04-25-2019
+% Version: 2
+% Last updated: 04-27-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [data_incoh_f2] = ColoradoProcessorF1(data_t, p)
