@@ -22,6 +22,8 @@ project_name=$1
 
 timestamp_file="txt.timestamps_${project_name}"
 
+job_list="txt.job_list_${project_name}"
+
 if [ -f ${timestamp_file} ]; then
     rm -f ${timestamp_file}
 fi
@@ -31,8 +33,6 @@ if [ -f ${job_list} ]; then
 fi
 
 ls "/data/${project_name}" | grep -e "201[1|2]*"> ${timestamp_file}
-
-job_list="txt.job_list_${project_name}"
 
 echo "reading datasets under GPS timestamps"
 while IFS='' read -r line || [[ -n "$line" ]]; do
