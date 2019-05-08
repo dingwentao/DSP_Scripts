@@ -4,6 +4,7 @@ function [trace_time, Results] = arena_data_reader_batch (xml_fullpath, dat_full
 fprintf(strcat('starting ',dat_fullpath, '......\n'));
 
 debug_mode = 0;
+unsync_patience = 10000000;
 
 %% Preparation Phase
 % Parse XML file and determine selected range gate to avoid issues with
@@ -153,7 +154,9 @@ while true
     end
     if ~isequal(sync,sync_word)
 	unsync_times=unsync_times+1;
-	%fprintf('unsync %d times now!\n',unsync_times);
+	if mod(unsync_times,unsync_patience)==0
+		fprintf('unsync %d times now! Give up corrupted file\n',unsync_times);return;
+	end
         % check the whole file for the first sync
         status = fseek(radar_id,-7,'cof');
         if status == -1
@@ -231,7 +234,7 @@ while true
     	end
         radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     else
-        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); return;
+        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); return; %continue;
     end
     
         if feof(radar_id)
@@ -279,7 +282,7 @@ end
 frewind(radar_id);
 counter = 0;
 start_pointer =0;
-
+unsync_times=0;
 %tic
 while true
     % Read in sync word and error check.
@@ -290,6 +293,9 @@ while true
     end
     if ~isequal(sync,sync_word)
 	unsync_times=unsync_times+1;
+	if mod(unsync_times,unsync_patience)==0
+		return;
+	end
 	%fprintf('unsync %d times now!\n',unsync_times);
         % check the whole file for the first sync
         status = fseek(radar_id,-7,'cof');
@@ -431,7 +437,10 @@ while true
 
             radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     else
-        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); return;
+        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); 
+	return;
+	%Results(mode_index).counter = Results(mode_index).counter - 1;
+	%continue;
     end
     
         if feof(radar_id)
@@ -476,17 +485,6 @@ clear sync sync_word radar_header_type radar_header_length mode ...
     radar_profile_length sample_size num_samples_per_profile ...
     radar_profile_data;
 % Print out data format message.
-%fprintf('Data format: ');
-if isequal(radar_profile_data_format, [0;0;0;0])
-    %fprintf('16-bit signed data (2 bytes ');
-elseif isequal(radar_profile_data_format, [0;0;1;0])
-    %fprintf('16-bit unsigned data (2 bytes ');
-elseif isequal(radar_profile_data_format, [0;0;2;0])
-    %fprintf('32-bit signed complex data pairs (8 bytes ');
-elseif isequal(radar_profile_data_format, [0;0;3;0])
-    %fprintf('32-bit floating point complex pairs (8 bytes ');
-end
-%fprintf('per sample).\n');
 clear radar_profile_data_format;
 
 
