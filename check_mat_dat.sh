@@ -2,6 +2,7 @@
 
 # D. Tao
 # create: 19-05-07
+# update: 19-05-08
 
 if [ "$#" -ne 1 ]; then
     echo "enter only one (1) argument, which is project name, 
@@ -38,7 +39,7 @@ fi
 
 ls "/data/${project_name}" | grep -e "201[1|2]*"> ${timestamp_file}
 
-echo "reading all .dat and .mat files"
+echo "Reading all .dat and .mat files"
 while IFS='' read -r line || [[ -n "$line" ]]; do
   prefix="/data/${project_name}/${line}"
   # only when .dat exists can we execute commands
@@ -59,12 +60,17 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
   done
 done < "${timestamp_file}"
 
-echo "done reading all .dat and .mat files"
+echo "Done reading all .dat and .mat files"
 
 checking_list="txt.checking_list_${project_name}"
 diff $dat_list $mat_list > $checking_list
 
-echo "done writing all checking results"
+if [ $? -eq 1 ]; then
+	echo "Missing mat files!"
+	echo "Done writing missing files"
+else
+	echo "All mat files generated!"
+fi
 
 rm -f ${timestamp_file}
 rm -f ${dat_list}
