@@ -1,4 +1,4 @@
-function [trace_time, Results] = arena_data_reader_interactive (xml_fullpath, dat_fullpath)
+function [trace_time, Results] = arena_data_reader_nonbatch (xml_fullpath, dat_fullpath)
 
 %% Code last updated by Zhe Jiang on April 12
 fprintf(strcat('starting ',dat_fullpath, '......\n'));
@@ -9,6 +9,11 @@ debug_mode = 0;
 % Parse XML file and determine selected range gate to avoid issues with
 % ARENA software bug.
 [my_modes,my_range_gates,socket_payload_size] = arena_xml_parse(xml_fullpath);
+
+if isempty(my_modes)
+	fprintf('Failed to parse modes from xml config file %s. Exiting. \n',xml_fullpath);
+	exit;
+end
 
 % Define a variable for all results
 Results = struct('Mode',{}, 'Chirps',{}, 'Relative_Counters',{}, ...
@@ -34,11 +39,15 @@ rel_time = [];
 %% Extracting UDP packets and save to a temporary file
 % Open radar.dat temporary file.
 tmp_fullpath = strcat(dat_fullpath(1:(end-3)),'tmp');
+%[tmp_filepath,tmp_name,tmp_ext] = fileparts(dat_fullpath);
+%tmp_dir = '/scratch/';
+%tmp_fullpath = strcat(tmp_dir,tmp_name, '.tmp');
+
 radar_id = fopen(tmp_fullpath , 'w');
 if radar_id == -1
-    error(strcat('ERROR: count not open temp file ',tmp_fullpath, ' for Writing. Exiting.'));
+    fprintf(strcat('ERROR: count not open temp file ',tmp_fullpath, ' for Writing. Exiting.'));return;
 else
-    fprintf('Temporary data file opened.\n');
+    %fprintf('Temporary data file opened.\n');
 end
 
 % Reading the .dat file
@@ -46,9 +55,9 @@ end
 % Open *.dat file.
 file_id = fopen(dat_fullpath, 'r');
 if file_id == -1
-        error('ERROR: could not open %s. Exiting.', dat_fullpath);
+        fprintf('ERROR: could not open %s. Exiting.', dat_fullpath); return;
 else
-    fprintf('%s opened for processing.\n', dat_fullpath);
+    %fprintf('%s opened for processing.\n', dat_fullpath);
 
 % Calculate the number of data blocks in the *.dat file.
 num_data_blocks = dat_file.bytes / data_block_size;
@@ -86,18 +95,18 @@ for j = 1:num_data_blocks
     fwrite(radar_id, radar_payload,'uint64');
 
     if mod(j,10000) == 1
-        fprintf('.');
+        %fprintf('.');
     end
 end
 
-fprintf('\n%d UDP packets processed.\n', num_data_blocks);
+%fprintf('\n%d UDP packets processed.\n', num_data_blocks);
 
 % Close *.dat file.
 if fclose(file_id) == 0
-    fprintf('%s closed.\n', dat_fullpath);
+    %fprintf('%s closed.\n', dat_fullpath);
 else
-    error('ERROR: %s could not be closed. Exiting.', ...
-        dat_fullpath);
+    fprintf('ERROR: %s could not be closed. Exiting.', ...
+        dat_fullpath);return;
 end
 end
 %toc
@@ -110,12 +119,12 @@ end
 
 % Close temporary data file.
 if fclose(radar_id) == 0
-    fprintf('Temporary data file closed.\n');
+    %fprintf('Temporary data file closed.\n');
 else
-    error('ERROR: Temporary data file could not be closed. Exiting.');
+    fprintf('ERROR: Temporary data file could not be closed for %s. Exiting.',dat_fullpath); return;
 end
 
-fprintf('Radar payload extracted from all *.dat files.\n');
+%fprintf('Radar payload extracted from all *.dat files.\n');
 
 
 %% Parsing the temporary file to extract chirps and variables
@@ -124,17 +133,17 @@ fprintf('Radar payload extracted from all *.dat files.\n');
 % Open radar.dat file.
 radar_id = fopen(tmp_fullpath, 'r');
 if radar_id == -1
-    error(strcat('ERROR: count not open temp file ',tmp_fullpath, ' for reading. Exiting.'));
+    fprintf(strcat('ERROR: count not open temp file ',tmp_fullpath, ' for reading. Exiting.')); return;
 else
-    fprintf('Temporary data file opened for processing.\n');
+    %fprintf('Temporary data file opened for processing.\n');
 end
 
 % Cycle through all the radar payload packets.
-fprintf('Extracting raw data. This may take a while.\n');
+%fprintf('Extracting raw data. This may take a while.\n');
 %tic
 counter = 0;
 start_pointer =0;
-
+unsync_times=0;
 while true
     % Read in sync word and error check.
 %    sync = fread(radar_id, 8);
@@ -143,24 +152,16 @@ while true
         break;
     end
     if ~isequal(sync,sync_word)
+	unsync_times=unsync_times+1;
+	%fprintf('unsync %d times now!\n',unsync_times);
         % check the whole file for the first sync
-        frewind(radar_id);
-        sync = fread(radar_id, 'uint64');
-        ind = find(sync == sync_word )-1;
-
-        if length(ind) == 0 
-          error('Unexpected data found instead of sync. Exiting.');
+        status = fseek(radar_id,-7,'cof');
+        if status == -1
+          fprintf('Failed to move back file pointer for resync. Exiting.'); return;
         end
-        
-        start_pointer = ind(1)*8;
-        fseek(radar_id, start_pointer, 'bof');
-        sync = fread(radar_id, 1,'uint64');
-
+	continue;
     end
 
-        if ~isequal(sync,sync_word)
-              error('Unexpected data found instead of sync. Exiting.');
-        end
 
     % Read in radar header type and length together.
     radar_header_type = fread(radar_id, 8);
@@ -214,15 +215,23 @@ while true
         
         % slight speed up when reading int64 in combination with typecast instead reading int32
  %       new_trace = fread(radar_id,2*num_samples_per_profile, 'int32');
-        new_trace = (typecast(int64(fread(radar_id,num_samples_per_profile, 'int64')), 'int32'));
-        
+	profile_bytes =fread(radar_id,num_samples_per_profile, 'int64');
+    
+    	if feof(radar_id)
+       		 break;
+    	end
+        new_trace = (typecast(int64(profile_bytes), 'int32'));
+    
         radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     elseif isequal(radar_profile_data_format, [0;0;3;0])
         sample_size = 8;
         new_trace = fread(radar_id,2*num_samples_per_profile, 'double');
-            radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
+    	if feof(radar_id)
+       		 break;
+    	end
+        radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     else
-        error('ERROR: unknown radar profile data format. Exiting.');
+        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); return;
     end
     
         if feof(radar_id)
@@ -233,13 +242,13 @@ while true
     %pps_time_raw = pps_counter + pps_fractional_counter*10d-8;
     %pps_time = [pps_time pps_time_raw];
 
-
-    counter = counter +1;
+   counter = counter +1;
     Results(mode_index).counter = Results(mode_index).counter +1;
+
      if bounced
          break;
      end
-%     
+ %     
     % Store all necessary information (currently only storing the profile
     % data).
     %radar_data = [radar_data radar_data_raw];
@@ -280,24 +289,16 @@ while true
         break;
     end
     if ~isequal(sync,sync_word)
+	unsync_times=unsync_times+1;
+	%fprintf('unsync %d times now!\n',unsync_times);
         % check the whole file for the first sync
-        frewind(radar_id);
-        sync = fread(radar_id, 'uint64');
-        ind = find(sync == sync_word )-1;
-
-        if length(ind) == 0 
-          error('Unexpected data found instead of sync. Exiting.');
+        status = fseek(radar_id,-7,'cof');
+        if status == -1
+          fprintf('Failed to resync file pointer. Exiting.'); return;
         end
-        
-        start_pointer = ind(1)*8;
-        fseek(radar_id, start_pointer, 'bof');
-        sync = fread(radar_id, 1,'uint64');
-
+	continue;
     end
 
-        if ~isequal(sync,sync_word)
-              error('Unexpected data found instead of sync. Exiting.');
-        end
 
     % Read in radar header type.
     radar_header_type = fread(radar_id, 4);
@@ -314,6 +315,7 @@ while true
     % Read in mode;
     mode = fread(radar_id, 1);
     mode_index = find(my_modes==mode);
+    % Increase counter for mode, but be careful for last incomplete chirp!
     Results(mode_index).counter = Results(mode_index).counter +1;
 
     if feof(radar_id)
@@ -348,40 +350,44 @@ while true
     
     % Read in relative counter.
     relative_counter = fread(radar_id, 1,'uint64');
-    Results(mode_index).Relative_Counters(1, Results(mode_index).counter) = relative_counter;
     if feof(radar_id)
-        break;
+	 Results(mode_index).counter = Results(mode_index).counter - 1;
+   	 break;
     end
     
     % Read in profile counter;
     profile_counter = fread(radar_id,1,'uint64');
-    Results(mode_index).Profile_Counters(1, Results(mode_index).counter) = profile_counter;
     if feof(radar_id)
-        break;
+	 Results(mode_index).counter = Results(mode_index).counter - 1;
+   	 break;
     end
     
     % Read in pps fractional counter.
     pps_fractional_counter = fread(radar_id, 1,'uint64');
-    Results(mode_index).PPS_Fractional_Counters(1,Results(mode_index).counter) = pps_fractional_counter;
     if feof(radar_id)
-        break;
+	 Results(mode_index).counter = Results(mode_index).counter - 1;
+   	 break;
     end
     
     % Read in pps counter.
     pps_counter = fread(radar_id, 1,'uint64');
     if feof(radar_id)
-        break;
+	 Results(mode_index).counter = Results(mode_index).counter - 1;
+   	 break;
     end
+	
     
     % Read in radar profile data format.
     radar_profile_data_format = fread(radar_id, 4);
     if feof(radar_id)
+	Results(mode_index).counter = Results(mode_index).counter - 1;
         break;
     end
     
     % Read in radar profile length.
     radar_profile_length = fread(radar_id, 1,'uint');
     if feof(radar_id)
+	Results(mode_index).counter = Results(mode_index).counter - 1;
         break;
     end
     
@@ -406,18 +412,30 @@ while true
         
         % slight speed up when reading int64 in combination with typecast instead reading int32
  %       new_trace = fread(radar_id,2*num_samples_per_profile, 'int32');
-        new_trace = (typecast(int64(fread(radar_id,num_samples_per_profile, 'int64')), 'int32'));
+	profile_bytes =fread(radar_id,num_samples_per_profile, 'int64');
+	 if feof(radar_id)
+		 Results(mode_index).counter = Results(mode_index).counter - 1;
+   		 break;
+   	 end
+        
+	new_trace = (typecast(int64(profile_bytes), 'int32'));
         
         radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     elseif isequal(radar_profile_data_format, [0;0;3;0])
         sample_size = 8;
         new_trace = fread(radar_id,2*num_samples_per_profile, 'double');
+	 if feof(radar_id)
+		 Results(mode_index).counter = Results(mode_index).counter - 1;
+   		 break;
+   	 end
+
             radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     else
-        error('ERROR: unknown radar profile data format. Exiting.');
+        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); return;
     end
     
         if feof(radar_id)
+             Results(mode_index).counter = Results(mode_index).counter - 1;
              bounced = 1;
              break;
          end
@@ -425,6 +443,14 @@ while true
     pps_time_raw = pps_counter + pps_fractional_counter*10d-8;
     %pps_time = [pps_time pps_time_raw];
     Results(mode_index).PPS_Time(1,Results(mode_index).counter) = pps_time_raw;
+    Results(mode_index).Relative_Counters(1, Results(mode_index).counter) = relative_counter;
+    Results(mode_index).Profile_Counters(1, Results(mode_index).counter) = profile_counter;
+    Results(mode_index).PPS_Fractional_Counters(1,Results(mode_index).counter) = pps_fractional_counter;
+    Results(mode_index).PPS_Counters(1,Results(mode_index).counter) = pps_counter;
+    
+    col_id = Results(mode_index).counter;
+    Results(mode_index).Chirps(:,col_id) = radar_data_raw;
+    
 
 
     counter = counter +1;
@@ -436,8 +462,6 @@ while true
     % data).
     
     %radar_data = [radar_data radar_data_raw];
-    col_id = Results(mode_index).counter;
-    Results(mode_index).Chirps(:,col_id) = radar_data_raw;
     
     
 end
@@ -452,17 +476,17 @@ clear sync sync_word radar_header_type radar_header_length mode ...
     radar_profile_length sample_size num_samples_per_profile ...
     radar_profile_data;
 % Print out data format message.
-fprintf('Data format: ');
+%fprintf('Data format: ');
 if isequal(radar_profile_data_format, [0;0;0;0])
-    fprintf('16-bit signed data (2 bytes ');
+    %fprintf('16-bit signed data (2 bytes ');
 elseif isequal(radar_profile_data_format, [0;0;1;0])
-    fprintf('16-bit unsigned data (2 bytes ');
+    %fprintf('16-bit unsigned data (2 bytes ');
 elseif isequal(radar_profile_data_format, [0;0;2;0])
-    fprintf('32-bit signed complex data pairs (8 bytes ');
+    %fprintf('32-bit signed complex data pairs (8 bytes ');
 elseif isequal(radar_profile_data_format, [0;0;3;0])
-    fprintf('32-bit floating point complex pairs (8 bytes ');
+    %fprintf('32-bit floating point complex pairs (8 bytes ');
 end
-fprintf('per sample).\n');
+%fprintf('per sample).\n');
 clear radar_profile_data_format;
 
 
@@ -476,6 +500,14 @@ delete(tmp_fullpath);
 % Delete radar.dat file.
 fclose(radar_id);
 mat_fullpath = strcat(dat_fullpath(1:(end-3)),'mat');
+mat_counter_fullpath = strcat(dat_fullpath(1:(end-4)),'_counters.mat');
+Counters = Results;
+for i = 1:size(my_modes,2)
+    Counters(i).Chirps = [];
+end
+ 
 save(mat_fullpath, 'Results','trace_time','-v7.3','-nocompression');
 fprintf(strcat('finishing ',mat_fullpath, '......\n'));
+save(mat_counter_fullpath, 'Counters','trace_time','-v7.3','-nocompression');
+fprintf(strcat('finishing ',mat_counter_fullpath, '......\n'));
 %toc
