@@ -8,6 +8,10 @@ function [my_modes,my_range_gates,socket_payload_size] = arena_xml_parse(filenam
 %   Note that this currently only works for single-subchannel systems or
 %   multi-subchannel systems that use the same modes.
 %   Add parsing the payload buffer size
+if ~ isfile(filename)
+	fprintf('Cannot find the xml file %s',filename);
+	exit;
+end
 
 xDoc = xmlread(filename);
 
@@ -23,10 +27,12 @@ for k = 0:all_digRx.getLength-1
   this_element = this_list.item(0);
   
   % Grab the mode and see if we have it already.
-  this_mode = str2double(this_element.getFirstChild.getData);
-  if ~ismember(this_mode, my_modes)
+  this_modes = str2double(...
+	strsplit(char(this_element.getFirstChild.getData),':'));
+  
+  if ~ismember(this_modes, my_modes)
     % The current mode does not exist in the set of found modes.
-    my_modes = [my_modes this_mode];
+    my_modes = [my_modes this_modes];
   end
 end
 clear all_digrx this_digRx this_list this_element this_mode;

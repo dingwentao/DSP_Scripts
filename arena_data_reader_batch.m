@@ -155,12 +155,12 @@ while true
     if ~isequal(sync,sync_word)
 	unsync_times=unsync_times+1;
 	if mod(unsync_times,unsync_patience)==0
-		fprintf('unsync %d times now! Give up corrupted file\n',unsync_times);return;
+		fprintf('unsync %d times now! Give up corrupted file\n',unsync_times);delete(tmp_fullpath);return;
 	end
         % check the whole file for the first sync
         status = fseek(radar_id,-7,'cof');
         if status == -1
-          fprintf('Failed to move back file pointer for resync. Exiting.'); return;
+          fprintf('Failed to move back file pointer for resync. Exiting.'); delete(tmp_fullpath);return;
         end
 	continue;
     end
@@ -234,7 +234,7 @@ while true
     	end
         radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     else
-        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); return; %continue;
+        fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); delete(tmp_fullpath);return; %continue;
     end
     
         if feof(radar_id)
@@ -294,13 +294,13 @@ while true
     if ~isequal(sync,sync_word)
 	unsync_times=unsync_times+1;
 	if mod(unsync_times,unsync_patience)==0
-		return;
+		delete(tmp_fullpath);return;
 	end
 	%fprintf('unsync %d times now!\n',unsync_times);
         % check the whole file for the first sync
         status = fseek(radar_id,-7,'cof');
         if status == -1
-          fprintf('Failed to resync file pointer. Exiting.'); return;
+          fprintf('Failed to resync file pointer. Exiting.'); delete(tmp_fullpath);return;
         end
 	continue;
     end
@@ -438,7 +438,7 @@ while true
             radar_data_raw=complex(new_trace(1:2:end,:),new_trace(2:2:end,:));
     else
         fprintf('ERROR: unknown radar profile data format in %s. Exiting.',dat_fullpath); 
-	return;
+	delete(tmp_fullpath);return;
 	%Results(mode_index).counter = Results(mode_index).counter - 1;
 	%continue;
     end
