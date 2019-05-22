@@ -1,1 +1,1 @@
-# Matlab and Bash Scripts for DSP
+# Matlab and Bash Scripts for Parallel DSP
