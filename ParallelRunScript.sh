@@ -42,8 +42,8 @@ function do_job {
     #echo $dat_dir
     #echo $code_dir
     #echo $dat_filestem
-    #nohup matlab -nodisplay -nodesktop -r "arena_data_reader_batch($twofiles);exit"
-    nohup matlab -nodisplay -nodesktop -r "Colorado_chunk_processor($dat_dir,$dat_dir,$code_dir,$dat_filestem,$chunk_size); exit"	
+    #nohup matlab -nodisplay -nodesktop -nosplash -r "arena_data_reader_batch($twofiles);exit"
+    nohup matlab -nodisplay -nodesktop -nosplash -r "Colorado_chunk_processor($dat_dir,$dat_dir,$code_dir,$dat_filestem,$chunk_size); exit"	
     ENDTIME=`date`
     echo "ADR job $twofiles completed"
     echo $1 $STARTTIME $ENDTIME>> $joblog
