@@ -6,7 +6,7 @@ chunk_size=64
 code_dir="'/data/RSC_HPC/scripts'"
 
 
-export PATH=/home/.MATLAB/R2018a/bin:$PATH  #change to your path
+export PATH=/opt/ohpc/pub/apps/MATLAB/R2018a/bin:$PATH  #change to your path
 
 set -o monitor 
 # means: run background processes in a separate processes...
