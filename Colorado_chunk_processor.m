@@ -126,32 +126,30 @@ for jj=1:size(Results, 2)
         
     % Elevation compensation
     dist=[];
-    range2=range1; 
-    echogram1=echogram0; 
-    [range2, dist, echogram1] = gps_corr(data_dir, file0, 1, echogram0, range1);
+    [range1, dist, echogram0] = gps_corr(data_dir, file0, 1, echogram0, range1);
               
     % save full echogram    
-    if size(echogram1, 1)==0 || size(echogram1, 2)==0 
+    if size(echogram0, 1)==0 || size(echogram0, 2)==0 
         return; 
     end 
-    save_path_fig  = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.fig']; % '_chunk' ii_str(ii, :)];
-    save_path_jpg  = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.jpg']; % '_chunk' ii_str(ii, :)];
-    save_path_data = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.mat']; % '_chunk' ii_str(ii, :)];
-    f1 = figure('visible', 'off');
-    if length(dist)==size(echogram1, 2)    
-        imagesc(dist,range2,echogram1);
-        xlabel('Along-track distance (km)');
-    else
-        imagesc(dist,range2,echogram1);
-        xlabel('Along-track index');
-    end
-    colormap(1-gray)
-    title([ file0(1:8) '-' file0(10:15) '-' file0(39:42) ])
-    ylabel('Range (m) [\epsilon_r=1]')
-    
-    saveas(f1, save_path_fig)
-    saveas(f1, save_path_jpg)
-    save(save_path_data, 'echogram1', 'range2'); 
+%     save_path_fig  = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.fig']; % '_chunk' ii_str(ii, :)];
+%     save_path_jpg  = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.jpg']; % '_chunk' ii_str(ii, :)];
+      save_path_data = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.mat']; % '_chunk' ii_str(ii, :)];
+%     f1 = figure('visible', 'on');
+%     if length(dist)==size(echogram0, 2)    
+%         imagesc(dist,range1,echogram0);
+%         xlabel('Along-track distance (km)');
+%     else
+%         imagesc(dist,range1,echogram0);
+%         xlabel('Along-track index');
+%     end
+%     colormap(1-gray)
+%     title([ file0(1:8) '-' file0(10:15) '-' file0(39:42) ])
+%     ylabel('Range (m) [\epsilon_r=1]')
+%     
+%     saveas(f1, save_path_fig)
+%     saveas(f1, save_path_jpg)
+    save(save_path_data, 'echogram0', 'range1'); 
 end
 
 
