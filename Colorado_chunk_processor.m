@@ -2,8 +2,8 @@
 % PARALLELIZABLE SNOW DATA PROCESSOR
 % This script is to process snow radar data block-wise in slow time
 % Author: Shashank Wattal
-% Version: 4
-% Last updated: 05-22-2019
+% Version: 6
+% Last updated: 05-31-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % data_dir    -   full directory path where the data's stored
@@ -134,7 +134,7 @@ for jj=1:size(Results, 2)
     end 
 %     save_path_fig  = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.fig']; % '_chunk' ii_str(ii, :)];
 %     save_path_jpg  = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.jpg']; % '_chunk' ii_str(ii, :)];
-      save_path_data = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.mat']; % '_chunk' ii_str(ii, :)];
+    save_path_data = [save_dir file0(1:end-4) '__mode' num2str(jj-1) '.mat']; % '_chunk' ii_str(ii, :)];
 %     f1 = figure('visible', 'on');
 %     if length(dist)==size(echogram0, 2)    
 %         imagesc(dist,range1,echogram0);

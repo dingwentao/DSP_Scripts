@@ -15,8 +15,8 @@
 % p.gps_path = full path to GPS file
 % p.Fs = sampling freq for fast time
 % Author: Shashank Wattal
-% Version: 3.1
-% Last updated: 05-20-2019
+% Version: 6
+% Last updated: 05-31-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -61,7 +61,7 @@ function [data_f] = ColoradoProcessorF1(data_t, p)
     % Median filter
     data_f = medfilt2(data_f,[4,4]);
     %     figure(); imagesc((data_incoh_f2)); colormap(1-gray)
-    data_f = data_f - max(data_f);
+    data_f = data_f - max(data_f(:));
     %     figure(); imagesc((data_incoh_f2)); colormap(1-gray)
        
 end
