@@ -2,8 +2,8 @@
 % PARALLELIZABLE SNOW DATA PROCESSOR
 % This script is to process snow radar data block-wise in slow time
 % Author: Shashank Wattal
-% Version: 6
-% Last updated: 05-31-2019
+% Version: 7
+% Last updated: 06-01-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % data_dir    -   full directory path where the data's stored
@@ -21,7 +21,7 @@
 % Multiple modes supported - processed and saved separately
 % Error handling is specific to GrandJunction 2019 filename format
 % Run single files only
-% In most exception cases, the entire set is processes as a single chunk
+% In most exception cases, the entire set is processed as a single chunk
 % Params are hard-coded for Grand Junction 2019
 % Calls ColoradoProcessorF1.m to process each chunk
 
@@ -123,7 +123,10 @@ for jj=1:size(Results, 2)
             [echogram0(:, first(ii):last(ii))] = ColoradoProcessorF1(Results(jj).Chirps(:, first(ii):last(ii)), params);
         end
     end
-        
+    
+    % Normalize
+    echogram0 = echogram0 - max(echogram0(:));
+
     % Elevation compensation
     dist=[];
     [range1, dist, echogram0] = gps_corr(data_dir, file0, 1, echogram0, range1);

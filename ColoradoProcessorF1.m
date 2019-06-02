@@ -1,6 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SNOW DATA CHUNK PROCESSOR
 % This script is to process each slow-time chunk of time domain FMCW data
+% Author: Shashank Wattal
+% Version: 7
+% Last updated: 06-01-2019
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % data_t : chunk of time domain data (fast time x slow time)
 % p      : parameters stored in a struct
 % p.hN   : num of Pulses integrated over
@@ -14,11 +19,6 @@
 % p.chirp_rate = Bandwidth/p.pulse_width;
 % p.gps_path = full path to GPS file
 % p.Fs = sampling freq for fast time
-% Author: Shashank Wattal
-% Version: 6
-% Last updated: 05-31-2019
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 function [data_f] = ColoradoProcessorF1(data_t, p)
    
@@ -61,7 +61,7 @@ function [data_f] = ColoradoProcessorF1(data_t, p)
     % Median filter
     data_f = medfilt2(data_f,[4,4]);
     %     figure(); imagesc((data_incoh_f2)); colormap(1-gray)
-    data_f = data_f - max(data_f(:));
+%     data_f = data_f - max(data_f(:));
     %     figure(); imagesc((data_incoh_f2)); colormap(1-gray)
        
 end
