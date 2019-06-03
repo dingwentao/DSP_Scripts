@@ -24,5 +24,5 @@ job_list_prefix="txt.job_list_${project_name}__"
 
 sh create_job_txt.sh ${project_name}
 for i in {00..15}; do
-    eval "sbatch ADR_batch.job ${job_list_prefix}${i}"
+    eval "sbatch batch_process.job ${job_list_prefix}${i}"
 done
