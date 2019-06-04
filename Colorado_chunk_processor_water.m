@@ -23,7 +23,7 @@
 % Run single files only
 % In most exception cases, the entire set is processed as a single chunk
 % Params are hard-coded for Grand Junction 2019
-% Calls ColoradoProcessorF1.m to process each chunk
+% Calls ColoradoProcessorF1_water.m to process each chunk
 
 function [] = Colorado_chunk_processor(data_dir, save_dir, code_dir, file0, chunk_size)
 
@@ -117,10 +117,10 @@ for jj=1:size(Results, 2)
         end
         
         if first(ii)>D && last(ii)<cols-D
-            temp = ColoradoProcessorF1(Results(jj).Chirps(:, first(ii)-D:last(ii)+D), params);                        
+            temp = ColoradoProcessorF1_water(Results(jj).Chirps(:, first(ii)-D:last(ii)+D), params);                        
             [echogram0(:, first(ii):last(ii))] = temp(:,1+D:end-D);
         else
-            [echogram0(:, first(ii):last(ii))] = ColoradoProcessorF1(Results(jj).Chirps(:, first(ii):last(ii)), params);
+            [echogram0(:, first(ii):last(ii))] = ColoradoProcessorF1_water(Results(jj).Chirps(:, first(ii):last(ii)), params);
         end
     end
     
