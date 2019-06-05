@@ -7,14 +7,6 @@
          
          [idx,raw]=xlsread([xlsdir xlsfilename]);
          
-         %estimation parameter initiallization
-         
-         updtcntr = 0;
-         delta = 35; %Initial threshold (power diference beteen main peak and end highest peak)
-         maxpk = -inf; 
-         rangeline = 0;
-         pkind = 0;
-         vpk = 0;
          
          % create echogram filename
          
@@ -22,7 +14,16 @@
          data_dir_0 = data_dir;
 	 for ii=1:total_tstamp
                 
-                 start_index=num2str(idx(ii,1));
+         	 %estimation parameter initiallization
+         
+         	 updtcntr = 0;
+         	 delta = 35; %Initial threshold (power diference beteen main peak and end highest peak)
+         	 maxpk = -inf; 
+         	 rangeline = 0;
+         	 pkind = 0;
+         	 vpk = 0;
+                 
+		 start_index=num2str(idx(ii,1));
                  if length(start_index)==1
                          start_index=['000' start_index];
                  elseif length(start_index)==2
@@ -66,8 +67,6 @@
                  
                     save_path_data=[save_dir folder '/' 'syscorr.mat'];
 		    save(save_path_data, 'syscorr');
-                 else
-                     return;
                  end
          end
 end
