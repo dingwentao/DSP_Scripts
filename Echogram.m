@@ -2,8 +2,8 @@
 % SNOW RADAR ECHOGRAM RENDERER
 % This script is to plot and save an echogram rendered from saved data
 % Author: Shashank Wattal
-% Version: 2
-% Last updated: 06-05-2019
+% Version: 1
+% Last updated: 06-04-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % data_dir    -   full directory path where the data's stored
@@ -56,17 +56,11 @@ end
 load([data_dir data_file])
 
 % Adjust vertical axis
-% [m, i] = max(echogram0, [], 1);
-% rangeCenter = mean(range0(i));
-% range0 = range0 - rangeCenter;    
 [m, i] = max(echogram0, [], 1);
-k=ceil(size(echogram0, 2)/20); 
-if (size(echogram0, 2) < k)   k = size(echogram0, 2); end
-rangeCenterTop = mean(mink(range0(i), k));
-range0 = range0 - rangeCenterTop;    
-rangeCenterBottom = mean(maxk(range0(i), k));
+rangeCenter = mean(range0(i));
+range0 = range0 - rangeCenter;    
 
-% % Debug:
+% Debug:
 % max(max(echogram0, [], 1))
 % max(echogram0(:))
 % 
@@ -92,29 +86,24 @@ rangeCenterBottom = mean(maxk(range0(i), k));
 save_path_fig  = [save_dir data_file(1:end-4) '.fig']; 
 save_path_jpg  = [save_dir data_file(1:end-4) '.jpg']; 
 
-dist0=[]; 
 f1 = figure('visible', 'off');
 if length(dist0)==size(echogram0, 2)    
     imagesc(dist0,range0,echogram0);
     xlabel('Along-track distance (km)');
 else
-    imagesc([],range0,echogram0);
+    imagesc(dist0,range0,echogram0);
     xlabel('Along-track index');
 end
 colormap(1-gray);
 title([ data_file(1:8) '-' data_file(10:15) '-' data_file(39:42) ]);
 ylabel(['Range (m) [\epsilon_r=' num2str(params.eps_r) ']']);
-caxis([-35 -10]);
-% y axis
-yTop = rangeCenterTop - 5; 
-yBottom = rangeCenterBottom + 10;
-if ((range0(1)<=yBottom) && (range0(end)>yTop))
-    ylim([yBottom yTop]);
+if (range0(1)<=-5) && (range0(end)>=10)
+    ylim([-5 10]);
 end
+caxis([-35 -10]);
 
 if (saveFig==1)     saveas(f1, save_path_fig);   end;
 if (saveJpg==1)     saveas(f1, save_path_jpg);   end
-
 
 end
 
