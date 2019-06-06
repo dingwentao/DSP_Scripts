@@ -2,8 +2,8 @@
 % SNOW RADAR ECHOGRAM RENDERER
 % This script is to plot and save an echogram rendered from saved data
 % Author: Shashank Wattal
-% Version: 1
-% Last updated: 06-04-2019
+% Version: 2
+% Last updated: 06-05-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % data_dir    -   full directory path where the data's stored
@@ -52,7 +52,6 @@ if exist([data_dir data_file])~=2
 end
 
 %% save
-
 load([data_dir data_file])
 
 % Adjust vertical axis
@@ -80,27 +79,38 @@ range0 = range0 - rangeCenter;
 % min(range0(i))
 % max(range0(i))
 
-% The horizontal axis needs to include lat/lon in addition to along-track distance.
-
-
 save_path_fig  = [save_dir data_file(1:end-4) '.fig']; 
 save_path_jpg  = [save_dir data_file(1:end-4) '.jpg']; 
 
 f1 = figure('visible', 'off');
-if length(dist0)==size(echogram0, 2)    
-    imagesc(dist0,range0,echogram0);
-    xlabel('Along-track distance (km)');
-else
-    imagesc(dist0,range0,echogram0);
-    xlabel('Along-track index');
+% ST distance axis
+stLabel = 'Along-track distance (km)';
+if length(dist0)~=size(echogram0, 2)        
+    dist0 =[]; 
+    stLabel = 'Along-track index';
 end
-colormap(1-gray);
-title([ data_file(1:8) '-' data_file(10:15) '-' data_file(39:42) ]);
-ylabel(['Range (m) [\epsilon_r=' num2str(params.eps_r) ']']);
-if (range0(1)<=-5) && (range0(end)>=10)
-    ylim([-5 10]);
+% lat lon axes
+if length(lat0)==size(echogram0, 2) && length(lon0)==size(echogram0, 2)
+    ax2 = axes('Position',[0.1 .2 .8 0]);
+    ax2.XLabel.String = 'Latitude';
+    ax2.XTickLabel = round(lat0, 4);
+    ax3 = axes('Position',[0.1 .1 .8 0]);
+    ax3.XLabel.String = 'Longitude';
+    ax3.XTickLabel = round(lon0, 4);
+%     plot(ax2, ones(1, size(echogram0,2)), zeros(1, size(echogram0, 2)))
 end
+% plot
+ax1 = axes('Position',[0.1 .3 .8 0.65 ]);
+imagesc(ax1, dist0, range0, echogram0);        
 caxis([-35 -10]);
+colormap(1-gray);
+ax1.XLabel.String = stLabel;
+ax1.YLabel.String = ['Range (m) [\epsilon_r=' num2str(params.eps_r) ']'];
+title([ data_file(1:8) '-' data_file(10:15) '-' data_file(39:42) ]);
+% scale vertically 
+if (range0(1)<=-5) && (range0(end)>=10)
+    ax1.YLim = [-5 10];
+end
 
 if (saveFig==1)     saveas(f1, save_path_fig);   end;
 if (saveJpg==1)     saveas(f1, save_path_jpg);   end
