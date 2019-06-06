@@ -24,7 +24,7 @@
 % range = range_vector;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [range_axis,dist,elev_corr] = gps_corr(data_dir,first_filename,num_files,data,range)
+function [range_axis,dist0,elev_corr,lat,lon] = gps_corr(data_dir,first_filename,num_files,data,range)
 
 % Finding gps file in the 'data_dir'
 filePattern = fullfile(data_dir, '*.txt'); 
@@ -32,7 +32,7 @@ files = dir(filePattern);
 % Search for ':' and if exist, show error message
 
  k = strfind(files(1).name,':');
- if ~isempty(k)
+ if ~isempty(k)       
        fprintf("\nGPS file name contains colon, Rename it with underscore'\n");
        return
  end
@@ -120,13 +120,14 @@ if idx2> idx1
                 end
                 
                 % Convert Along Track indices (slow time) into Distance
-                dist=0;
+                dist0=0;
                 for ii=1:length(lat)-1
-                        dist(ii+1) = dist(ii)+sw_dist([lat(ii) lat(ii+1)],[lon(ii) lon(ii+1)],'km')+0*1e-6;
+                        dist0(ii+1) = dist0(ii)+sw_dist([lat(ii) lat(ii+1)],[lon(ii) lon(ii+1)],'km')+0*1e-6;
                 end
         end
 else
         elev_corr=data;
         range_axis= range;
-        dist=[];
+        dist0=[]; lat=[]; lon=[]; 
 end
+

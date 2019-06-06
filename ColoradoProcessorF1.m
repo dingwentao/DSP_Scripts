@@ -1,9 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SNOW DATA CHUNK PROCESSOR
+% SNOW RADAR CHUNK PROCESSOR
 % This script is to process each slow-time chunk of time domain FMCW data
 % Author: Shashank Wattal
-% Version: 7
-% Last updated: 06-01-2019
+% Version: 8
+% Last updated: 06-04-2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % data_t : chunk of time domain data (fast time x slow time)
@@ -32,8 +32,8 @@ function [data_f] = ColoradoProcessorF1(data_t, p)
     % Coherent noise removal and averaging
     coh_noise = mean(data_f,2);
     data_f    = data_f - 1.*coh_noise;
-%     data_coh_f = data_f;
-%     figure(); imagesc(db(data_coh_f)); colormap(1-gray)
+    %     figure(); imagesc(db(data_f)); colormap(1-gray)
+
     if p.coh_avg_size>=1
         for ii=1:c0                    
             if (ii > p.coh_avg_size) && (ii < c0 - p.coh_avg_size)
@@ -43,7 +43,7 @@ function [data_f] = ColoradoProcessorF1(data_t, p)
             end
         end    
     end
-    %     figure(); imagesc(db(data_coh_f)); colormap(1-gray)
+    %     figure(); imagesc(db(data_f)); colormap(1-gray)
     
     % Incoherent averaging
     data_f = 20*log10(abs(data_f));
@@ -56,13 +56,11 @@ function [data_f] = ColoradoProcessorF1(data_t, p)
             end
         end    
     end
-%         figure(); imagesc((data_incoh_f1)); colormap(1-gray)
+    %     figure(); imagesc(db(data_f)); colormap(1-gray)
 
     % Median filter
     data_f = medfilt2(data_f,[4,4]);
-    %     figure(); imagesc((data_incoh_f2)); colormap(1-gray)
-%     data_f = data_f - max(data_f(:));
-    %     figure(); imagesc((data_incoh_f2)); colormap(1-gray)
+    %     figure(); imagesc(db(data_f)); colormap(1-gray)
        
 end
 
