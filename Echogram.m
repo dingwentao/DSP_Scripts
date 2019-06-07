@@ -18,7 +18,7 @@
 % dist0       -   along-track distance vector (km)
 % lat0        -   along-track latitude vector
 % lon0        -   along-track longitude vector
-% params      -   struct containing parame[ters (at least params.eps_r)
+% params      -   struct containing parameters (at least params.eps_r)
 
 % caxis hardcoded to [-35 -10], assumes echogram's normalized to a 0 max
 % built for filename format and data hierarchy specific to GrandJunction2019 on IceBox
