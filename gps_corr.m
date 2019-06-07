@@ -24,7 +24,7 @@
 % range = range_vector;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [range_axis,dist0,elev_corr,lat,lon] = gps_corr(data_dir,first_filename,num_files,data,range)
+function [range_axis,dist0,elev_corr,lat,lon,elev] = gps_corr(data_dir,first_filename,num_files,data,range)
 
 % Finding gps file in the 'data_dir'
 filePattern = fullfile(data_dir, '*.txt'); 
@@ -128,6 +128,6 @@ if idx2> idx1
 else
         elev_corr=data;
         range_axis= range;
-        dist0=[]; lat=[]; lon=[]; 
+        dist0=[]; lat=[]; lon=[]; elev=[]; 
 end
 

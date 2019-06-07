@@ -37,16 +37,16 @@ function [] = Colorado_chunk_processor(data_dir, save_dir, code_dir, file0, chun
 
 % error handling 
 if (exist(data_dir)~=7 || exist(save_dir)~=7 || exist(code_dir)~=7)    
-    fprintf("\nDirectory not found (data_dir, save_dir, or code_dir) \n");
+%     fprintf("\nDirectory not found (data_dir, save_dir, or code_dir) \n");
     return
 elseif (length(file0)~=42&&length(file0)~=46)
-    fprintf("\nUnexpected filename format; expected length 42 or 46\n");
+%     fprintf("\nUnexpected filename format; expected length 42 or 46\n");
     return
 end
 % operating system 
 if isunix      separator = '/';
 elseif ispc    separator = '\';
-else           error('\nExpected OS to be Linux/Windows.'); end
+else           return;      end %error('\nExpected OS to be Linux/Windows.'); end
 % path
 if ~strcmp(data_dir(end), separator) 
     data_dir = [data_dir separator];
@@ -58,11 +58,11 @@ if ~strcmp(file0(end-3:end), '.mat')
     file0 = [file0 '.mat'];
 end
 if exist([data_dir file0])~=2
-    fprintf("\nNon-existent input file\n");
+%     fprintf("\nNon-existent input file\n");
     return
 end
 if (floor(chunk_size)~=chunk_size) || chunk_size<2
-    fprintf("\nExpected chunk_size to be an integer >= 2 \n");
+%     fprintf("\nExpected chunk_size to be an integer >= 2 \n");
     return
 end
 
@@ -84,7 +84,7 @@ params.eps_r = 1.53; % permittivity of snow
 c = 3e8;  % speed of light m/s
 
 if chunk_size <= params.coh_avg_size*params.incoh_avg_size
-    fprintf('\nExpected chunk size larger than %d \n', params.coh_avg_size*params.incoh_avg_size); 
+%     fprintf('\nExpected chunk size larger than %d \n', params.coh_avg_size*params.incoh_avg_size); 
     return
 end
 
